@@ -27,11 +27,13 @@ public class OrderTriggerHandler {
             for (Account acc : accounts) {
                 Boolean hasOtherOrders = [SELECT COUNT() FROM Order WHERE AccountId = :acc.Id AND Id NOT IN :oldOrders] > 0;
                 if (!hasOtherOrders) {
-                    acc.Active__c = 'No';
+                    acc.Active__c = false;
                 }
             }
             update accounts;
         }
     }
 }
+    
+
 

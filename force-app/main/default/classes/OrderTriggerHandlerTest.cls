@@ -209,12 +209,12 @@ public class OrderTriggerHandlerTest {
         insert ordItem2;
 
         // Marquer le compte comme actif
-        acc.Active__c = 'Yes';
+        acc.Active__c = true;
         update acc;
 
         // Vérifier que la configuration est correcte
         Account updatedAcc = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
-        System.assertEquals('Yes', updatedAcc.Active__c, 'Account should be active after setup');
+        System.assertEquals(true, updatedAcc.Active__c, 'Account should be active after setup');
 
         // Tester la suppression d'une commande, le compte doit rester actif
         Test.startTest();
@@ -222,7 +222,7 @@ public class OrderTriggerHandlerTest {
         Test.stopTest();
 
         Account updatedAccAfterDelete = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
-        System.assertEquals('Yes', updatedAccAfterDelete.Active__c, 'Account should remain active after deleting one order');
+        System.assertEquals(true, updatedAccAfterDelete.Active__c, 'Account should remain active after deleting one order');
     }
 
     @isTest
@@ -271,7 +271,7 @@ public class OrderTriggerHandlerTest {
         insert ordItem2;
 
         // Marquer le compte comme actif
-        acc.Active__c = 'Yes';
+        acc.Active__c = true;
         update acc;
 
         // Supprimer la première commande
@@ -283,6 +283,6 @@ public class OrderTriggerHandlerTest {
         Test.stopTest();
 
         Account updatedAcc2 = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
-        System.assertEquals('No', updatedAcc2.Active__c, 'Account should be inactive after deleting all orders');
+        System.assertEquals(false, updatedAcc2.Active__c, 'Account should be inactive after deleting all orders');
     }
 }
