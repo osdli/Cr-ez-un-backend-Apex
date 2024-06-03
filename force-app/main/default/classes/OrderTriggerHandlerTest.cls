@@ -4,7 +4,7 @@ public class OrderTriggerHandlerTest {
     @testSetup
     static void setupTestData() {
         // Créer les données de test nécessaires pour tous les tests
-        Account testAccount = new Account(Name = 'Test Account');
+        Account testAccount = new Account(Name = 'Test Account', Active__c = false);
         insert testAccount;
 
         Contract testContract = new Contract(
@@ -164,9 +164,31 @@ public class OrderTriggerHandlerTest {
     }
 
     @isTest
-    static void testAccountRemainsActiveAfterSingleOrderDeletion() {
-        // Configuration des données de test
+    static void testAccountIsActiveAfterOrderInsertion() {
+        // Récupérer le compte "Test Account"
         Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'Test Account' LIMIT 1];
+        // Vérifier que le champ Active__c est actif ou non
+        System.assertEquals(false, acc.Active__c, 'Account should be inactive initially');
+    
+        // Insérer un nouvel ordre
+        Order newOrder = new Order(
+            AccountId = acc.Id,
+            Status = 'Draft',
+            EffectiveDate = Date.today(),
+            Pricebook2Id = Test.getStandardPricebookId()
+        );
+        insert newOrder;
+    
+        // Vérifier que le compte devient actif après l'insertion de l'ordre
+        Account updatedAccount = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
+        System.assertEquals(true, updatedAccount.Active__c, 'Account should become active after order insertion');
+    }
+
+    @isTest
+    static void testAccountRemainsActiveAfterSingleOrderDeletion() {
+        Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'Test Account' LIMIT 1];
+        System.assertEquals(false, acc.Active__c, 'Account should be inactive initially');
+
         Contract con = [SELECT Id, Status FROM Contract WHERE AccountId = :acc.Id LIMIT 1];
         con.Status = 'Activated';
         update con;
@@ -227,8 +249,9 @@ public class OrderTriggerHandlerTest {
 
     @isTest
     static void testAccountBecomesInactiveAfterAllOrdersDeletion() {
-        // Configuration des données de test
         Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'Test Account' LIMIT 1];
+        System.assertEquals(false, acc.Active__c, 'Account should be inactive initially');
+
         Contract con = [SELECT Id, Status FROM Contract WHERE AccountId = :acc.Id LIMIT 1];
         con.Status = 'Activated';
         update con;
@@ -284,5 +307,49 @@ public class OrderTriggerHandlerTest {
 
         Account updatedAcc2 = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
         System.assertEquals(false, updatedAcc2.Active__c, 'Account should be inactive after deleting all orders');
+    }
+
+    @isTest
+    static void testHighVolumeOrders() {
+        // Test pour vérifier la mise à jour du champ Active__c avec un grand volume de commandes
+        Account acc = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
+        Id priceBookEntryId = TestDataFactory.createTestProductAndPriceBookEntry();
+
+        List<Order> orders = new List<Order>();
+        List<OrderItem> orderItems = new List<OrderItem>();
+
+        for (Integer i = 0; i < 250; i++) {
+            Order ord = new Order(
+                AccountId = acc.Id,
+                Status = 'Draft',
+                EffectiveDate = Date.today(),
+                Pricebook2Id = Test.getStandardPricebookId()
+            );
+            orders.add(ord);
+        }
+        insert orders;
+
+        for (Order ord : orders) {
+            OrderItem ordItem = new OrderItem(
+                OrderId = ord.Id,
+                Quantity = 1,
+                PricebookEntryId = priceBookEntryId,
+                UnitPrice = 5000.00
+            );
+            orderItems.add(ordItem);
+        }
+        insert orderItems;
+
+        // Vérifier que le compte est actif après l'insertion des commandes
+        Account updatedAcc = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
+        System.assertEquals(true, updatedAcc.Active__c, 'Account should be active after inserting high volume of orders');
+
+        Test.startTest();
+        delete orders;
+        Test.stopTest();
+
+        // Vérifier que le compte devient inactif après la suppression de toutes les commandes
+        updatedAcc = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
+        System.assertEquals(false, updatedAcc.Active__c, 'Account should be inactive after deleting all high volume orders');
     }
 }
