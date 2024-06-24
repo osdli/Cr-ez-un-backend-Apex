@@ -95,4 +95,22 @@ public class TestDataFactory {
         insert tasks;
         return tasks;
     }
+
+    public static User createTestUser() {
+        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User' LIMIT 1];
+        User testUser = new User(
+            Alias = 'tuser',
+            Email = 'testuser@example.com',
+            EmailEncodingKey = 'UTF-8',
+            LastName = 'User',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = p.Id,
+            TimeZoneSidKey = 'GMT',
+            UserName = 'testuser' + DateTime.now().getTime() + '@example.com'
+        );
+        insert testUser;
+        return testUser;
+    }
+    
 }
