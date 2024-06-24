@@ -1,5 +1,4 @@
 public class TaskReminderService {
-
     public static void createReminderTasks(List<Account> accounts) {
         Set<Id> accountIds = new Set<Id>();
         for (Account acc : accounts) {
@@ -11,14 +10,12 @@ public class TaskReminderService {
         for (Order ord : [SELECT AccountId FROM Order WHERE AccountId IN :accountIds]) {
             accountIdsWithOrders.add(ord.AccountId);
         }
-        System.debug('accountIdsWithOrders: ' + accountIdsWithOrders);
 
         // Récupérer les tâches avec le sujet 'Call'
         Set<Id> accountIdsWithTasks = new Set<Id>();
         for (Task t : [SELECT WhatId FROM Task WHERE WhatId IN :accountIds AND Subject = 'Call']) {
             accountIdsWithTasks.add(t.WhatId);
         }
-        System.debug('accountIdsWithTasks: ' + accountIdsWithTasks);
 
         // Filtrer les comptes sans commandes ni tâches
         List<Account> accountsToProcess = new List<Account>();
@@ -27,7 +24,6 @@ public class TaskReminderService {
                 accountsToProcess.add(acc);
             }
         }
-        System.debug('accountsToProcess: ' + accountsToProcess);
 
         // Créer des tâches de rappel
         List<Task> tasksToInsert = new List<Task>();
@@ -45,6 +41,5 @@ public class TaskReminderService {
         if (!tasksToInsert.isEmpty()) {
             insert tasksToInsert;
         }
-        System.debug('tasksToInsert: ' + tasksToInsert);
     }
 }
