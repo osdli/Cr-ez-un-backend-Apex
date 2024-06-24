@@ -9,6 +9,15 @@ public class TestDataFactory {
         return acc;
     }
 
+    public static List<Account> createAccounts(Integer count) {
+        List<Account> accounts = new List<Account>();
+        for (Integer i = 0; i < count; i++) {
+            accounts.add(new Account(Name = 'Test Account ' + i));
+        }
+        insert accounts;
+        return accounts;
+    }
+
     public static Contract createContract(Id accountId) {
         Contract contract = new Contract(
             AccountId = accountId,
@@ -35,5 +44,55 @@ public class TestDataFactory {
         insert standardPBE;
         
         return standardPBE.Id;
+    }
+    
+    public static Order createOrder(Id accountId) {
+        Order ord = new Order(
+            AccountId = accountId,
+            Status = 'Draft',
+            EffectiveDate = Date.today()
+        );
+        insert ord;
+        return ord;
+    }
+
+    public static List<Order> createOrdersForAccounts(List<Account> accounts, Integer ordersPerAccount) {
+        List<Order> orders = new List<Order>();
+        for (Account acc : accounts) {
+            for (Integer i = 0; i < ordersPerAccount; i++) {
+                orders.add(new Order(
+                    AccountId = acc.Id,
+                    Status = 'Draft',
+                    EffectiveDate = Date.today()
+                ));
+            }
+        }
+        insert orders;
+        return orders;
+    }
+
+    public static Task createTask(Id whatId, String subject) {
+        Task task = new Task(
+            WhatId = whatId,
+            Subject = subject,
+            Status = 'Completed'
+        );
+        insert task;
+        return task;
+    }
+
+    public static List<Task> createTasksForAccounts(List<Account> accounts, String subject, Integer tasksPerAccount) {
+        List<Task> tasks = new List<Task>();
+        for (Account acc : accounts) {
+            for (Integer i = 0; i < tasksPerAccount; i++) {
+                tasks.add(new Task(
+                    WhatId = acc.Id,
+                    Subject = subject,
+                    ActivityDate = System.today()
+                ));
+            }
+        }
+        insert tasks;
+        return tasks;
     }
 }
