@@ -3,7 +3,7 @@ public class OrderTriggerHandlerTest {
 
     @testSetup
     static void setupTestData() {
-        // Créer les données de test nécessaires pour tous les tests
+        
         Account testAccount = new Account(Name = 'Test Account', Active__c = false);
         insert testAccount;
 
@@ -18,32 +18,11 @@ public class OrderTriggerHandlerTest {
         TestDataFactory.createTestProductAndPriceBookEntry();
     }
 
-    private static Order createOrderWithStatus(Account acc, String status) {
-        Order ord = new Order(
-            AccountId = acc.Id,
-            Status = status,
-            EffectiveDate = Date.today(),
-            Pricebook2Id = Test.getStandardPricebookId()
-        );
-        insert ord;
-        return ord;
-    }
-
-    private static void addOrderItem(Order ord, Id priceBookEntryId) {
-        OrderItem ordItem = new OrderItem(
-            OrderId = ord.Id,
-            Quantity = 1,
-            PricebookEntryId = priceBookEntryId,
-            UnitPrice = 5000.00
-        );
-        insert ordItem;
-    }
-
     @isTest
     static void testOrderStatusUpdateWithoutProducts() {
         // Test de mise à jour du statut d'une commande sans produits associés
         Account acc = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
-        Order ord = createOrderWithStatus(acc, 'Draft');
+        Order ord = TestDataFactory.createOrderWithStatus(acc, 'Draft');
 
         Test.startTest();
         ord.Status = 'Activated';
@@ -61,8 +40,8 @@ public class OrderTriggerHandlerTest {
         // Test de mise à jour du statut d'une commande avec produits associés
         Account acc = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
         Id priceBookEntryId = TestDataFactory.createTestProductAndPriceBookEntry();
-        Order ord = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord, priceBookEntryId);
+        Order ord = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord, priceBookEntryId);
 
         Test.startTest();
         ord.Status = 'Activated';
@@ -78,8 +57,8 @@ public class OrderTriggerHandlerTest {
         // Test de mise à jour d'un autre champ de la commande
         Account acc = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
         Id priceBookEntryId = TestDataFactory.createTestProductAndPriceBookEntry();
-        Order ord = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord, priceBookEntryId);
+        Order ord = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord, priceBookEntryId);
 
         Test.startTest();
         ord.Description = 'Updated Description';
@@ -95,8 +74,8 @@ public class OrderTriggerHandlerTest {
         // Test sans changement de la commande
         Account acc = [SELECT Id FROM Account WHERE Name = 'Test Account' LIMIT 1];
         Id priceBookEntryId = TestDataFactory.createTestProductAndPriceBookEntry();
-        Order ord = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord, priceBookEntryId);
+        Order ord = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord, priceBookEntryId);
 
         Test.startTest();
         update ord;
@@ -113,7 +92,7 @@ public class OrderTriggerHandlerTest {
         Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'Test Account' LIMIT 1];
         System.assertEquals(false, acc.Active__c, 'Account should be inactive initially');
 
-        Order newOrder = createOrderWithStatus(acc, 'Draft');
+        Order newOrder = TestDataFactory.createOrderWithStatus(acc, 'Draft');
 
         Account updatedAccount = [SELECT Active__c FROM Account WHERE Id = :acc.Id];
         System.assertEquals(true, updatedAccount.Active__c, 'Account should become active after order insertion');
@@ -125,10 +104,10 @@ public class OrderTriggerHandlerTest {
         Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'Test Account' LIMIT 1];
         Id priceBookEntryId = TestDataFactory.createTestProductAndPriceBookEntry();
 
-        Order ord1 = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord1, priceBookEntryId);
-        Order ord2 = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord2, priceBookEntryId);
+        Order ord1 = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord1, priceBookEntryId);
+        Order ord2 = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord2, priceBookEntryId);
 
         acc.Active__c = true;
         update acc;
@@ -147,10 +126,10 @@ public class OrderTriggerHandlerTest {
         Account acc = [SELECT Id, Active__c FROM Account WHERE Name = 'Test Account' LIMIT 1];
         Id priceBookEntryId = TestDataFactory.createTestProductAndPriceBookEntry();
 
-        Order ord1 = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord1, priceBookEntryId);
-        Order ord2 = createOrderWithStatus(acc, 'Draft');
-        addOrderItem(ord2, priceBookEntryId);
+        Order ord1 = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord1, priceBookEntryId);
+        Order ord2 = TestDataFactory.createOrderWithStatus(acc, 'Draft');
+        TestDataFactory.addOrderItem(ord2, priceBookEntryId);
 
         acc.Active__c = true;
         update acc;

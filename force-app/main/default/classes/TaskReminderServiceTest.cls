@@ -14,7 +14,6 @@ public class TaskReminderServiceTest {
                 testAccounts.add(acc);
             }
             insert testAccounts;
-            System.debug('Test Accounts: ' + testAccounts);
 
             // Créer manuellement les sous-listes
             List<Account> accountsWithOrders = new List<Account>();
@@ -28,16 +27,13 @@ public class TaskReminderServiceTest {
                 accountsWithTasks.add(testAccounts[i]);
             }
 
-            // Assurez-vous que certains comptes ont des commandes et des tâches existantes
+            // S'assurer que certains comptes ont des commandes et des tâches existantes
             TestDataFactory.createOrdersForAccounts(accountsWithOrders, 1);
             TestDataFactory.createTasksForAccounts(accountsWithTasks, 'Call', 1);
 
-            System.debug('Accounts with Orders: ' + accountsWithOrders);
-            System.debug('Accounts with Tasks: ' + accountsWithTasks);
 
             // Vérifier les tâches avant l'exécution
             List<Task> existingTasks = [SELECT Id, WhatId, Subject FROM Task WHERE Subject = 'Call'];
-            System.debug('Existing Tasks before execution: ' + existingTasks);
 
             // Appeler la méthode pour créer des tâches de rappel
             Test.startTest();
@@ -46,7 +42,6 @@ public class TaskReminderServiceTest {
 
             // Vérifier que des tâches de rappel ont été créées pour les comptes sans commandes ni tâches existantes
             List<Task> tasks = [SELECT Id, WhatId, Subject FROM Task WHERE Subject = 'Call' AND CreatedDate = TODAY];
-            System.debug('Tasks created: ' + tasks);
 
             // Identifier les comptes sans commandes ni tâches pour vérifier l'exactitude
             List<Account> expectedAccountsToProcess = new List<Account>();
@@ -55,7 +50,6 @@ public class TaskReminderServiceTest {
                     expectedAccountsToProcess.add(acc);
                 }
             }
-            System.debug('Expected Accounts to Process: ' + expectedAccountsToProcess);
 
             // Vérifier si les tâches existantes avant le test ont été incluses dans les nouvelles tâches
             Set<Id> existingTaskIds = new Set<Id>();

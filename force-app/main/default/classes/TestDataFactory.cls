@@ -112,5 +112,25 @@ public class TestDataFactory {
         insert testUser;
         return testUser;
     }
-    
+
+    public static Order createOrderWithStatus(Account acc, String status) {
+        Order ord = new Order(
+            AccountId = acc.Id,
+            Status = status,
+            EffectiveDate = Date.today(),
+            Pricebook2Id = Test.getStandardPricebookId()
+        );
+        insert ord;
+        return ord;
+    }
+
+    public static void addOrderItem(Order ord, Id priceBookEntryId) {
+        OrderItem ordItem = new OrderItem(
+            OrderId = ord.Id,
+            Quantity = 1,
+            PricebookEntryId = priceBookEntryId,
+            UnitPrice = 5000.00
+        );
+        insert ordItem;
+    }
 }

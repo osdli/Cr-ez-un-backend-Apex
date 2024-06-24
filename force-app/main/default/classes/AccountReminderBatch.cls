@@ -10,11 +10,11 @@ global class AccountReminderBatch implements Database.Batchable<SObject>, Databa
     }
 
     global void execute(Database.BatchableContext BC, List<Account> scope) {
-        System.debug('Scope: ' + scope);
+       
         TaskReminderService.createReminderTasks(scope);
     }
 
     global void finish(Database.BatchableContext BC) {
-        // Notification ou autre logique de fin de traitement
+        //Notif
     }
 }

@@ -3,72 +3,67 @@ private class AccountReminderBatchTest {
     
     @testSetup
     static void setup() {
-        // Create test data
-        List<Account> accounts = new List<Account>();
-        for (Integer i = 0; i < 200; i++) {
-            accounts.add(new Account(Name = 'Test Account ' + i));
+       
+        List<Account> accounts = TestDataFactory.createAccounts(200);
+        
+        // Créer des commandes pour les 100 premiers comptes pour simuler des données existantes
+        List<Account> accountsWithOrders = new List<Account>();
+        for (Integer i = 0; i < 100; i++) {
+            accountsWithOrders.add(accounts[i]);
         }
-        insert accounts;
+        TestDataFactory.createOrdersForAccounts(accountsWithOrders, 1);
+        
+        // Créer des tâches avec le sujet 'Call' pour les 50 comptes suivants
+        List<Account> accountsWithTasks = new List<Account>();
+        for (Integer i = 100; i < 150; i++) {
+            accountsWithTasks.add(accounts[i]);
+        }
+        TestDataFactory.createTasksForAccounts(accountsWithTasks, 'Call', 1);
     }
     
     @isTest
-    static void testStart() {
-        // Create instance of batch class
-        AccountReminderBatch batch = new AccountReminderBatch();
+    static void testAccountReminderBatchProcessesAllAccounts() {
+        Test.startTest();
         
-        // Get the query locator
-        Database.QueryLocator ql = batch.start(null);
+        // Exécuter le lot
+        AccountReminderBatch batchInstance = new AccountReminderBatch();
+        Database.executeBatch(batchInstance);
         
-        // Retrieve query records
-        List<Account> accountList = new List<Account>();
-        for (Account acct : [SELECT Id, OwnerId FROM Account]) {
-            accountList.add(acct);
+        Test.stopTest();
+        
+        // Vérifier les résultats
+        // Récupérer toutes les tâches créées aujourd'hui avec le sujet 'Call'
+        List<Task> createdTasks = [SELECT Id, WhatId, Subject FROM Task WHERE Subject = 'Call' AND CreatedDate = TODAY];
+        
+        // Récupérer tous les comptes
+        List<Account> allAccounts = [SELECT Id FROM Account];
+        
+        // Récupérer les comptes avec des commandes
+        List<Order> orders = [SELECT AccountId FROM Order];
+        Set<Id> accountsWithOrders = new Set<Id>();
+        for (Order order : orders) {
+            accountsWithOrders.add(order.AccountId);
         }
         
-        // Assert that the query locator is not null
-        System.assertNotEquals(null, ql);
+        // Récupérer les comptes avec des tâches créées avant aujourd'hui
+        List<Task> tasks = [SELECT WhatId FROM Task WHERE Subject = 'Call' AND CreatedDate < TODAY];
+        Set<Id> accountsWithTasks = new Set<Id>();
+        for (Task task : tasks) {
+            accountsWithTasks.add(task.WhatId);
+        }
         
-        // Assert that the query locator has records
-        System.assert(accountList.size() > 0, 'Expected some Account records.');
-    }
+        // Identifier les comptes qui auraient dû avoir des tâches créées
+        Set<Id> expectedAccountIdsToProcess = new Set<Id>();
+        for (Account acc : allAccounts) {
+            if (!accountsWithOrders.contains(acc.Id) && !accountsWithTasks.contains(acc.Id)) {
+                expectedAccountIdsToProcess.add(acc.Id);
+            }
+        }
 
-    @isTest
-    static void testExecute() {
-        // Create instance of batch class
-        AccountReminderBatch batch = new AccountReminderBatch();
-        
-        // Get test accounts
-        List<Account> accounts = [SELECT Id, OwnerId FROM Account LIMIT 10];
-        
-        // Execute the batch execute method
-        Test.startTest();
-        batch.execute(null, accounts);
-        Test.stopTest();
-        
-    }
-
-    @isTest
-    static void testFinish() {
-        // Create instance of batch class
-        AccountReminderBatch batch = new AccountReminderBatch();
-        
-        // Execute the batch finish method
-        Test.startTest();
-        batch.finish(null);
-        Test.stopTest();
-        
-    }
-
-    @isTest
-    static void testSchedulable() {
-        // Create instance of batch class
-        AccountReminderBatch batch = new AccountReminderBatch();
-        
-        // Schedule the batch
-        String jobId = System.schedule('TestJob', '0 0 0 1 1 ? 2050', batch);
-        
-        // Verify that the job was scheduled
-        CronTrigger ct = [SELECT Id, CronExpression, TimesTriggered, NextFireTime FROM CronTrigger WHERE Id = :jobId];
-        System.assertEquals('0 0 0 1 1 ? 2050', ct.CronExpression);
+        // Vérifier que le nombre de tâches créées est conforme aux attentes
+        System.assertEquals(expectedAccountIdsToProcess.size(), createdTasks.size(), 'Le nombre de tâches créées devrait correspondre au nombre de comptes sans commandes ni tâches existantes');
+        for (Task task : createdTasks) {
+            System.assertEquals('Call', task.Subject, 'Le sujet de la tâche devrait être "Call"');
+        }
     }
 }
