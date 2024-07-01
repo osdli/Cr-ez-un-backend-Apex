@@ -31,7 +31,6 @@ public class TaskReminderServiceTest {
             TestDataFactory.createOrdersForAccounts(accountsWithOrders, 1);
             TestDataFactory.createTasksForAccounts(accountsWithTasks, 'Call', 1);
 
-
             // Vérifier les tâches avant l'exécution
             List<Task> existingTasks = [SELECT Id, WhatId, Subject FROM Task WHERE Subject = 'Call'];
 
@@ -65,9 +64,9 @@ public class TaskReminderServiceTest {
             }
 
             // Assert que le nombre de tâches créées est correct
-            System.assertEquals(expectedAccountsToProcess.size(), newTaskCount, 'Le nombre de tâches créées devrait correspondre au nombre de comptes sans commandes ni tâches existantes');
+            Assert.areEqual(expectedAccountsToProcess.size(), newTaskCount, 'Le nombre de tâches créées devrait correspondre au nombre de comptes sans commandes ni tâches existantes');
             for (Task task : tasks) {
-                System.assertEquals('Call', task.Subject, 'Le sujet de la tâche devrait être "Call"');
+                Assert.areEqual('Call', task.Subject, 'Le sujet de la tâche devrait être "Call"');
             }
         }
     }

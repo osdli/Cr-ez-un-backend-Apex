@@ -3,7 +3,6 @@ private class AccountReminderBatchTest {
     
     @testSetup
     static void setup() {
-       
         List<Account> accounts = TestDataFactory.createAccounts(200);
         
         // Créer des commandes pour les 100 premiers comptes pour simuler des données existantes
@@ -61,9 +60,9 @@ private class AccountReminderBatchTest {
         }
 
         // Vérifier que le nombre de tâches créées est conforme aux attentes
-        System.assertEquals(expectedAccountIdsToProcess.size(), createdTasks.size(), 'Le nombre de tâches créées devrait correspondre au nombre de comptes sans commandes ni tâches existantes');
+        Assert.areEqual(expectedAccountIdsToProcess.size(), createdTasks.size(), 'Le nombre de tâches créées devrait correspondre au nombre de comptes sans commandes ni tâches existantes');
         for (Task task : createdTasks) {
-            System.assertEquals('Call', task.Subject, 'Le sujet de la tâche devrait être "Call"');
+            Assert.areEqual('Call', task.Subject, 'Le sujet de la tâche devrait être "Call"');
         }
     }
 }
