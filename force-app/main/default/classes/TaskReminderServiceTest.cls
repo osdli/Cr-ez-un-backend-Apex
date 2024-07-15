@@ -3,7 +3,7 @@ public class TaskReminderServiceTest {
 
     @isTest
     static void testCreateReminderTasks() {
-        // Créer un utilisateur de test pour être le propriétaire des comptes
+        // Créer un utilisateur de test pour posséder les comptes
         User testUser = TestDataFactory.createTestUser();
         System.runAs(testUser) {
             List<Account> testAccounts = new List<Account>();
@@ -15,7 +15,7 @@ public class TaskReminderServiceTest {
             }
             insert testAccounts;
 
-            // Créer manuellement les sous-listes
+            // Créer manuellement des sous-listes
             List<Account> accountsWithOrders = new List<Account>();
             List<Account> accountsWithTasks = new List<Account>();
 
@@ -39,7 +39,7 @@ public class TaskReminderServiceTest {
             TaskReminderService.createReminderTasks(testAccounts);
             Test.stopTest();
 
-            // Vérifier que des tâches de rappel ont été créées pour les comptes sans commandes ni tâches existantes
+            // Vérifier que les tâches de rappel ont été créées pour les comptes sans commandes ni tâches existantes
             List<Task> tasks = [SELECT Id, WhatId, Subject FROM Task WHERE Subject = 'Call' AND CreatedDate = TODAY];
 
             // Identifier les comptes sans commandes ni tâches pour vérifier l'exactitude
@@ -50,7 +50,7 @@ public class TaskReminderServiceTest {
                 }
             }
 
-            // Vérifier si les tâches existantes avant le test ont été incluses dans les nouvelles tâches
+            // Vérifier si les tâches existantes avant le test étaient incluses dans les nouvelles tâches
             Set<Id> existingTaskIds = new Set<Id>();
             for (Task t : existingTasks) {
                 existingTaskIds.add(t.Id);
@@ -63,7 +63,7 @@ public class TaskReminderServiceTest {
                 }
             }
 
-            // Assert que le nombre de tâches créées est correct
+            // Vérifier que le nombre de tâches créées est correct
             Assert.areEqual(expectedAccountsToProcess.size(), newTaskCount, 'Le nombre de tâches créées devrait correspondre au nombre de comptes sans commandes ni tâches existantes');
             for (Task task : tasks) {
                 Assert.areEqual('Call', task.Subject, 'Le sujet de la tâche devrait être "Call"');
