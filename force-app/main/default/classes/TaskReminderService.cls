@@ -11,9 +11,9 @@ public class TaskReminderService {
             accountIdsWithOrders.add(ord.AccountId);
         }
 
-        // Récupérer les tâches avec le sujet 'Call'
+        // Récupérer les comptes avec des tâches
         Set<Id> accountIdsWithTasks = new Set<Id>();
-        for (Task t : [SELECT WhatId FROM Task WHERE WhatId IN :accountIds AND Subject = 'Call']) {
+        for (Task t : [SELECT WhatId FROM Task WHERE WhatId IN :accountIds]) {
             accountIdsWithTasks.add(t.WhatId);
         }
 
