@@ -1,8 +1,4 @@
-global class AccountReminderBatch implements Database.Batchable<SObject>, Database.Stateful, Schedulable {
-
-    global void execute(SchedulableContext sc) {
-        Database.executeBatch(this);
-    }
+global class AccountReminderBatch implements Database.Batchable<SObject>, Database.Stateful {
 
     global Database.QueryLocator start(Database.BatchableContext BC) {
         String query = 'SELECT Id, OwnerId FROM Account';
@@ -10,11 +6,10 @@ global class AccountReminderBatch implements Database.Batchable<SObject>, Databa
     }
 
     global void execute(Database.BatchableContext BC, List<Account> scope) {
-       
         TaskReminderService.createReminderTasks(scope);
     }
 
     global void finish(Database.BatchableContext BC) {
-        //Notif
+        // Notification ou autre
     }
 }
